@@ -1,1 +1,55 @@
-```yaml name: Build FlashChat Android APK on: workflow_dispatch: push: branches: - main permissions: contents: read jobs: build: runs-on: ubuntu-latest steps: - name: Checkout source uses: actions/checkout@v4 - name: Setup Node.js uses: actions/setup-node@v4 with: node-version: 20 - name: Setup Java uses: actions/setup-java@v4 with: distribution: temurin java-version: 21 - name: Setup Android SDK uses: android-actions/setup-android@v3name: Install dependencies run: npm install - name: Add Android project run: npx cap add android - name: Sync web assets run: npx cap sync android - name: Build APK working-directory: android run: ./gradlew assembleDebug - name: Upload APK uses: actions/upload-artifact@v4 with: name: FlashChat-debug-APK path: android/app/build/outputs/apk/debug/app-debug.apk
+name: Build FlashChat Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install project dependencies
+        run: npm install
+
+      - name: Install Capacitor Android dependencies
+        run: npm install @capacitor/core @capacitor/cli @capacitor/android
+
+      - name: Add Android project
+        run: npx cap add android
+
+      - name: Sync web assets
+        run: npx cap sync android
+
+      - name: Build APK
+        working-directory: android
+        run: ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: FlashChat-debug-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
